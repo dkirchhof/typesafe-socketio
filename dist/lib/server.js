@@ -16,8 +16,13 @@ exports.createReceiver = (socket, callbacks) => {
         if (callback) {
             const callbackParams = params.slice(1, -1);
             const ackFn = params[params.length - 1];
-            const result = await callback(...callbackParams);
-            ackFn(result);
+            try {
+                const result = await callback(...callbackParams);
+                ackFn({ type: "success", data: result });
+            }
+            catch (e) {
+                ackFn({ type: "error", data: e.message });
+            }
         }
     };
     socket.on("rpc", listener);

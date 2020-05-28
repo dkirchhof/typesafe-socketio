@@ -11,8 +11,14 @@ export const createSender = <API>(socket: SocketIOClient.Socket) => {
     return new Proxy({}, {
         get(_, procedure) {
             return function (...params: any[]) {
-                return new Promise(resolve => {
-                    socket.emit("rpc", procedure, ...params, resolve);
+                return new Promise((resolve, reject) => {
+                    socket.emit("rpc", procedure, ...params, (response: { type: "success" | "error"; data: any; }) => {
+                        if (response.type === "success") {
+                            resolve(response.data);
+                        } else if (response.type === "error") {
+                            reject(response.data);
+                        }
+                    });
                 });
             };
         },

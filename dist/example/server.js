@@ -6,7 +6,7 @@ const server = socketio(8080);
 server.on("connection", socket => {
     server_1.createReceiver(socket, {
         add: (a, b) => a + b,
-        doIt: () => { console.log("do it"); },
+        doIt: () => { throw new Error("can't do it"); },
     });
     const sender = server_1.createSender();
     sender.sayHello([socket], "hello daniel");

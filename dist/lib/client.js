@@ -4,8 +4,15 @@ exports.createSender = (socket) => {
     return new Proxy({}, {
         get(_, procedure) {
             return function (...params) {
-                return new Promise(resolve => {
-                    socket.emit("rpc", procedure, ...params, resolve);
+                return new Promise((resolve, reject) => {
+                    socket.emit("rpc", procedure, ...params, (response) => {
+                        if (response.type === "success") {
+                            resolve(response.data);
+                        }
+                        else if (response.type === "error") {
+                            reject(response.data);
+                        }
+                    });
                 });
             };
         },

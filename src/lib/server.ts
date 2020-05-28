@@ -3,7 +3,7 @@ import { Callbacks, Receiver } from "./shared";
 
 export { Callbacks, Receiver };
 
-// add sockets array as first param to each function
+// adds sockets array as first param to each function
 export type Sender<T> = {
     [K in keyof T]: T[K] extends (...params: infer P) => infer R ? (sockets: socketio.Socket[], ...params: P) => R : never;
 };
@@ -26,9 +26,14 @@ export const createReceiver = <API>(socket: socketio.Socket, callbacks: Callback
         if (callback) {
             const callbackParams = params.slice(1, -1);
             const ackFn = params[params.length - 1];
-            const result = await callback(...callbackParams);
 
-            ackFn(result);
+            try {
+                const result = await callback(...callbackParams);
+                
+                ackFn({ type: "success", data: result });
+            } catch(e) {
+                ackFn({ type: "error", data: e.message });
+            }
         }
     };
 

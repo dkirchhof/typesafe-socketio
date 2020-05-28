@@ -8,9 +8,20 @@ const main = async () => {
         sayHello: (greeting) => console.log(greeting),
     });
     const sender = client_1.createSender(socket);
-    const result1 = await sender.doIt();
-    const result2 = await sender.add(20, 22);
-    console.log(result1, result2);
+    try {
+        const result1 = await sender.doIt();
+        console.log(result1);
+    }
+    catch (e) {
+        console.error("error:", e);
+    }
+    try {
+        const result2 = await sender.add(20, 22);
+        console.log(result2);
+    }
+    catch (e) {
+        console.error("error:", e);
+    }
     receiver.unlisten();
     socket.close();
 };
