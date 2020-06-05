@@ -5,7 +5,12 @@ exports.createSender = () => {
     return new Proxy({}, {
         get(_, procedure) {
             return function (sockets, ...params) {
-                sockets.forEach(socket => socket.emit("rpc", procedure, ...params));
+                if (Array.isArray(sockets)) {
+                    sockets.forEach(socket => socket.emit("rpc", procedure, ...params));
+                }
+                else {
+                    sockets.emit("rpc", procedure, ...params);
+                }
             };
         },
     });

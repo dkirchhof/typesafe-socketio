@@ -5,14 +5,18 @@ export { Callbacks, Receiver };
 
 // adds sockets array as first param to each function
 export type Sender<T> = {
-    [K in keyof T]: T[K] extends (...params: infer P) => infer R ? (sockets: Socket[], ...params: P) => R : never;
+    [K in keyof T]: T[K] extends (...params: infer P) => infer R ? (sockets: Socket | Socket[], ...params: P) => R : never;
 };
 
 export const createSender = <API>() => {
     return new Proxy({}, {
         get(_, procedure) {
-            return function (sockets: Socket[], ...params: any[]) {
-                sockets.forEach(socket => socket.emit("rpc", procedure, ...params));
+            return function (sockets: Socket | Socket[], ...params: any[]) {
+                if (Array.isArray(sockets)) {
+                    sockets.forEach(socket => socket.emit("rpc", procedure, ...params));
+                } else {
+                    sockets.emit("rpc", procedure, ...params);
+                }
             };
         },
     }) as Sender<API>;
@@ -29,9 +33,9 @@ export const createReceiver = <API>(socket: Socket, callbacks: Callbacks<API>) =
 
             try {
                 const result = await callback(...callbackParams);
-                
+
                 ackFn({ type: "success", data: result });
-            } catch(e) {
+            } catch (e) {
                 ackFn({ type: "error", data: e.message });
             }
         }
